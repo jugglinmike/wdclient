@@ -237,24 +237,22 @@ class Session(object):
         self.find = None
         self.extension = None
 
-    def send_raw_command(self, method, url, body=None, headers=None, validate=False):
+    def send_raw_command(self, method, url, body=None, headers=None):
         """Send a command to the remote end.
 
         :param method: HTTP method to use in request
         :param url: "command part" of the requests URL path
         :param body: body of the HTTP request
         :param headers: Additional headers to include in the HTTP request
-        :param validate: flag to enable assertions for specification invariants
-            of the response
         """
         url = urlparse.urljoin("session/%s/" % self.session_id, url)
-        return self.transport.send(method, url, body, headers, validate)
+        return self.transport.send(method, url, body, headers)
 
     def send_command(self, method, url, body=None, key=None):
         if self.session_id is None:
             raise error.SessionNotCreatedException()
 
-        result = self.send_raw_command(method, url, body, validate=True)
+        result = self.send_raw_command(method, url, body)
 
         if result.status != 200:
             cls = error.get(result.body["value"].get("error"))

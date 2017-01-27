@@ -31,7 +31,7 @@ class HTTPWireProtocol(object):
     def url(self, suffix):
         return urlparse.urljoin(self.path_prefix, suffix)
 
-    def send(self, method, url, body=None, headers=None, validate=False):
+    def send(self, method, url, body=None, headers=None):
         """Send a command to the remote.
 
         :param method: "POST" or "GET".
@@ -39,8 +39,6 @@ class HTTPWireProtocol(object):
         :param body: Body of the request.  Defaults to an empty dictionary
             if ``method`` is "POST".
         :param headers: Additional headers to include in the request.
-        :param validate: flag to enable assertions for specification invariants
-            of the response
         """
 
         if body is None and method == "POST":
@@ -63,7 +61,7 @@ class HTTPWireProtocol(object):
 
         try:
             resp = conn.getresponse()
-            result = Result(resp, validate)
+            result = Result(resp)
         finally:
             conn.close()
 
