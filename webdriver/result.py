@@ -10,8 +10,8 @@ class Result():
 
         self._validate(response)
 
-    def __str__(self):
-        return 'Result(status=%d, body=%s)' % self.status, self.body
+    def __repr__(self):
+        return 'wdclient.Result(status=%d, body=%s)' % (self.status, self.body)
 
     # SpecID: dfn-send-a-response
     def _validate(self, response):
