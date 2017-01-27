@@ -5,6 +5,7 @@
 import urlparse
 
 import error
+import result
 import transport
 
 
@@ -215,13 +216,13 @@ class Session(object):
         #body["capabilities"] = caps
         body = caps
 
-        resp = self.transport.send("POST", "session", body=body)
-        self.session_id = resp["sessionId"]
+        result = self.transport.send("POST", "session", body=body)
+        self.session_id = result.body["value"]["sessionId"]
 
         if self.extension_cls:
             self.extension = self.extension_cls(self)
 
-        return resp["value"]
+        return result.body["value"]
 
     def end(self):
         if self.session_id is None:
@@ -236,11 +237,35 @@ class Session(object):
         self.find = None
         self.extension = None
 
+    def send_raw_command(self, method, url, body=None, headers=None, validate=False):
+        """Send a command to the remote end.
+
+        :param method: HTTP method to use in request
+        :param url: "command part" of the requests URL path
+        :param body: body of the HTTP request
+        :param headers: Additional headers to include in the HTTP request
+        :param validate: flag to enable assertions for specification invariants
+            of the response
+        """
+        url = urlparse.urljoin("session/%s/" % self.session_id, url)
+        return self.transport.send(method, url, body, headers, validate)
+
     def send_command(self, method, url, body=None, key=None):
         if self.session_id is None:
             raise error.SessionNotCreatedException()
-        url = urlparse.urljoin("session/%s/" % self.session_id, url)
-        return self.transport.send(method, url, body, key=key)
+
+        result = self.send_raw_command(method, url, body, validate=True)
+
+        if result.status != 200:
+            cls = error.get(result.body["value"].get("error"))
+            raise cls(result.body["value"].get("message"))
+
+        if key is not None:
+            result.body = result.body[key]
+        if not result.body:
+            result.body = None
+
+        return result.body
 
     @property
     @command
