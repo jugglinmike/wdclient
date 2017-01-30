@@ -5,7 +5,6 @@
 import urlparse
 
 import error
-import result
 import transport
 
 

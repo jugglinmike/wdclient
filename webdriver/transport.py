@@ -5,10 +5,44 @@
 import httplib
 import json
 import urlparse
-from result import Result
 
 HTTP_TIMEOUT = 5
 
+class Response(object):
+    def __init__(self, status, body):
+        self.status = status
+        self.body = body
+
+    def __repr__(self):
+        return 'wdclient.Response(status=%d, body=%s)' % (self.status, self.body)
+
+    @staticmethod
+    def from_http_response(http_response):
+        status = http_response.status
+        body = http_response.read()
+
+        # SpecID: dfn-send-a-response
+        #
+        # > 3. Set the response's header with name and value with the following
+        # >    values:
+        # >
+        # >    "Content-Type"
+        # >       "application/json; charset=utf-8"
+        # >    "cache-control"
+        # >       "no-cache"
+        assert http_response.getheader("Content-Type") == "application/json; charset=utf-8"
+        assert http_response.getheader("Cache-Control") == "no-cache"
+
+        if body:
+            body = json.loads(body)
+
+            # SpecID: dfn-send-a-response
+            #
+            # > 4. If data is not null, let response's body be a JSON Object
+            #      with a key `value` set to the JSON Serialization of data.
+            assert "value" in body
+
+        return Response(status, body)
 
 class HTTPWireProtocol(object):
     """Transports messages (commands and responses) over the WebDriver
@@ -60,9 +94,8 @@ class HTTPWireProtocol(object):
         conn.request(method, url, body, headers)
 
         try:
-            resp = conn.getresponse()
-            result = Result(resp)
+            response = Response.from_http_response(conn.getresponse())
         finally:
             conn.close()
 
-        return result
+        return response
