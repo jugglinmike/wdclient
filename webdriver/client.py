@@ -243,11 +243,24 @@ class Session(object):
         :param url: "command part" of the requests URL path
         :param body: body of the HTTP request
         :param headers: Additional headers to include in the HTTP request
+        :return: an instance of wdclient.Response describing the HTTP response
+            received from the remote end
         """
         url = urlparse.urljoin("session/%s/" % self.session_id, url)
         return self.transport.send(method, url, body, headers)
 
     def send_command(self, method, url, body=None, key=None):
+        """Send a command to the remote end and validate its success.
+
+        :param method: HTTP method to use in request
+        :param url: "command part" of the requests URL path
+        :param body: body of the HTTP request
+        :param key: (deprecated) when specified, this string value will be used
+            to de-reference the HTTP response body following JSON parsing
+        :return: None if the HTTP response body was empty, otherwise: the
+            result of parsing the HTTP response body as JSON
+        """
+
         if self.session_id is None:
             raise error.SessionNotCreatedException()
 

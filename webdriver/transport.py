@@ -9,6 +9,9 @@ import urlparse
 HTTP_TIMEOUT = 5
 
 class Response(object):
+    """Describes an HTTP response received from a remote en"Describes an HTTP
+    response received from a remote end whose body has been read and parsed as
+    appropriate."""
     def __init__(self, status, body):
         self.status = status
         self.body = body
@@ -73,6 +76,8 @@ class HTTPWireProtocol(object):
         :param body: Body of the request.  Defaults to an empty dictionary
             if ``method`` is "POST".
         :param headers: Additional headers to include in the request.
+        :return: an instance of wdclient.Response describing the HTTP response
+            received from the remote end.
         """
 
         if body is None and method == "POST":
