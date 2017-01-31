@@ -17,7 +17,7 @@ class Response(object):
         self.body = body
 
     def __repr__(self):
-        return 'wdclient.Response(status=%d, body=%s)' % (self.status, self.body)
+        return "wdclient.Response(status=%d, body=%s)" % (self.status, self.body)
 
     @staticmethod
     def from_http_response(http_response):
